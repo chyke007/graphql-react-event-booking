@@ -1,0 +1,9 @@
+{
+    "env":{
+        "MONGO_USER": "",
+        "MONGO_PASSWORD": "",
+        "DB_URL":"localhost:27017",
+        "DB_OPTIONS":"",
+        "MONGO_DB":"events-react-dev"
+    }
+}
