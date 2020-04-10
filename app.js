@@ -12,6 +12,23 @@ const app = express();
 
 app.use(bodyParser.json());
 
+const events = eventIds => {
+    return Event.find({_id: {$in: eventIds}})
+    .then(events => {
+        return events.map(event => {
+            return {...event._doc, _id: event.id, creator: user.bind(this,event._doc.creator)}
+        })
+    })
+}
+
+const user = userId => {
+    return User.findById(userId)
+    .then(user => {
+        return {...user._doc, _id: user.id, createdEvents: events.bind(this, user._doc.createdEvents)}
+    })
+    .catch(err => {throw err})
+}
+
 app.use('/graphql', graphqlHttp({
     schema: buildSchema(`
         type Event {
@@ -59,16 +76,12 @@ app.use('/graphql', graphqlHttp({
     rootValue: {
         events: () => {
             return Event.find()
-            .populate('creator')
             .then(events => {
                 return events.map(event => {
                     return {
                         ...event._doc,
                          _id: event.id,
-                         creator: {
-                             ...event._doc.creator._doc,
-                             _id: event._doc.creator.id
-                         }
+                         creator: user.bind(this,event._doc.creator)
                         }
                 })
             }).catch(err => {
@@ -88,7 +101,7 @@ app.use('/graphql', graphqlHttp({
             return event
             .save()
             .then(result => {
-                createdEvents = {...result._doc, _id: result._doc._id.toString()}
+                createdEvents = {...result._doc, _id: result._doc._id.toString(), creator: user.bind(this, result._doc.creator)}
                 return User.findById('5e8e4eeb3494d04bccd4e380')
             })
             .then(user => {
